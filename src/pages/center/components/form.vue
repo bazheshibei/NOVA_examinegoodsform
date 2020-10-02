@@ -94,7 +94,7 @@
             <template slot-scope="scope">
               <span v-if="pageType === 'view'">{{scope.row.typeNum}}</span>
               <el-input v-else class="comInput" :class="accountability.total.type === 100 ? '' : 'comInputFalse'" size="mini"
-                v-model="scope.row.typeNum" @blur="blur(scope.row.index, scope.row.typeNum, 'typeNum')"
+                v-model="scope.row.typeNum"
               ></el-input>
             </template>
           </el-table-column>
@@ -105,9 +105,9 @@
             <template slot-scope="scope">
               <span v-if="pageType === 'view'">{{scope.row.jobNum}}&nbsp;&nbsp;</span>
               <el-input v-else class="comInput" :class="accountability.total.job[scope.row.type] === 100 ? '' : 'comInputFalse'" size="mini"
-                v-model="scope.row.jobNum" @blur="blur(scope.row.index, scope.row.jobNum, 'jobNum')"
+                v-model="scope.row.jobNum"
               ></el-input>
-              <p class="showNum">({{accountability.jobNum[scope.row.index]}}%)</p>
+              <p class="showNum">({{accountability.jobNum[scope.row.job]}}%)</p>
             </template>
           </el-table-column>
           <!-- 人员占比（%） -->
@@ -117,11 +117,11 @@
                 <div class="tablePeople" v-for="(item, index) in scope.row.list" :key="'name_input_' + index">
                   <span>{{item.name}}占比:</span>
                   <span v-if="pageType === 'view'">{{item.num}}&nbsp;&nbsp;</span>
-                  <el-input v-else class="comInput" :class="accountability.total.peoples[scope.row.index] === 100 ? '' : 'comInputFalse'" size="mini"
-                    v-model="item.num" @blur="blur(scope.row.index, item.num, 'num', 'list', index)"
+                  <el-input v-else class="comInput" :class="accountability.total.peoples[scope.row.job] === 100 ? '' : 'comInputFalse'" size="mini"
+                    v-model="item.num"
                   ></el-input>
-                  <p class="showNum" style="text-align: left; margin-right: 20px;" v-if="accountability.peopleNum[scope.row.index]">
-                    ({{accountability.peopleNum[scope.row.index][index]}}%)
+                  <p class="showNum" style="text-align: left; margin-right: 20px;" v-if="accountability.peopleNum[scope.row.job]">
+                    ({{accountability.peopleNum[scope.row.job][index]}}%)
                   </p>
                 </div>
               </div>
@@ -178,23 +178,6 @@ export default {
     ...mapGetters(['summary', 'accountability'])
   },
   methods: {
-    /**
-     * [责任划分：输入值改为数字]
-     * @param {[Int]}    index 条目索引
-     * @param {[Number]} num   输入值
-     * @param {[String]} name  属性名
-     * @param {[String]} name2 二级属性名
-     * @param {[String]} key   二级索引
-     */
-    blur(index, num, name, name2 = '', key = '') {
-      if (!name2) {
-        /* 类型占比、岗位占比 */
-        this.formData[index][name] = parseFloat(num)
-      } else {
-        /* 人员占比 */
-        this.formData[index][name2][key][name] = parseFloat(num)
-      }
-    },
     /**
      * [上传附件：查看]
      */

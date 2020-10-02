@@ -103,6 +103,10 @@ const HTTP = function (param) {
   Axios({ method, url, data })
     .then(function (res) {
       suc(res.data.data)
+      /* 以服务的方式调用的 Loading 需要异步关闭 */
+      if (loading) {
+        loadingInstance.close()
+      }
     })
     .catch(function (res) {
       err(res)

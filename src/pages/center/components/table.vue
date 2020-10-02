@@ -300,7 +300,7 @@ export default {
      */
     blurRatio(row, name, val) {
       const { store_name, index, key } = row
-      this.tableData[`${index}.${store_name}`][key].ratio = parseFloat(val)
+      this.tableData[`${index}.${store_name}`][key].ratio = isNaN(parseFloat(val)) ? 0 : parseFloat(val)
     },
     /**
      * [上传附件：查看]
@@ -503,7 +503,7 @@ export default {
         obj[`${index}.${store_name}`][key][name] = val
         this.$store.commit('assignData', { name: 'tableData', obj })
         /* 不合格 */
-        if (name === 'examine_result' && val === '0') {
+        if (name === 'examine_result') {
           /** change 事件：责任归属 **/
           this.$store.commit('changeCheckbox')
         }

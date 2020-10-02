@@ -13,20 +13,12 @@ module.exports = {
     assetsPublicPath: '/',
     proxyTable: {
       '/api': {
-        // target: 'http://10.10.0.226:8080/nova', // 晓东
-        target: 'http://192.168.9.166:8080/nova', // 老李
+        target: 'http://10.10.0.226:8080/nova', // 晓东
+        target: 'http://10.10.0.54:8080/nova', // 老李
         secure: false, // proxy https
         changeOrigin: true,
         pathRewrite: {
           '^/api': ''
-        }
-      },
-      '/api_f': {
-        target: 'http://47.105.94.214:8083/nova', // 服务器
-        secure: false, // proxy https
-        changeOrigin: true,
-        pathRewrite: {
-          '^/api_f': ''
         }
       }
     },

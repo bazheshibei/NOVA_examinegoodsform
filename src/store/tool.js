@@ -1,6 +1,10 @@
 
 const Tool = {}
 
+// 影响 责任划分
+//   changeCheckbox  责任归属 事件
+//   returnFormData  生成
+
 /** ------------------------------ getters ------------------------------ **/
 
 /**
@@ -47,7 +51,7 @@ Tool.summary = function (state) {
     let count = 0
     /* 单条：大数据 */
     tableData[x].forEach(function (item) {
-      if (arrResult[item.examine_result] === '不合格') {
+      if (arrResult[item.examine_result] === '不合格' && item.is_delete === '1') {
         /* 抽取：责任归属（文字） */
         const outInTextArr = []
         item.accountability.out.forEach(function (val) {
@@ -109,13 +113,13 @@ Tool.accountability = function (state) {
       inNum = item.typeNum ? item.typeNum : inNum
       /* 计算值：岗位占比 */
       jobNumShow = parseFloat(inNum) * parseFloat(item.jobNum || 0) / 100 // 类型占比 * 岗位占比
-      obj.jobNum[item.index] = parseFloat(jobNumShow.toFixed(2))
+      obj.jobNum[item.job] = parseFloat(jobNumShow.toFixed(2))
       inNumCount += parseFloat(item.jobNum || 0)
     } else if (item.type === '外部') {
       outNum = item.typeNum ? item.typeNum : outNum
       /* 计算值：岗位占比 */
       jobNumShow = parseFloat(outNum) * parseFloat(item.jobNum || 0) / 100 // 类型占比 * 岗位占比
-      obj.jobNum[item.index] = parseFloat(jobNumShow.toFixed(2))
+      obj.jobNum[item.job] = parseFloat(jobNumShow.toFixed(2))
       outNumCount += parseFloat(item.jobNum || 0)
     }
     /* 计算值：人员占比 */
@@ -127,8 +131,8 @@ Tool.accountability = function (state) {
         peopleNum[val.name] = parseFloat((parseFloat(val.num || 0) * jobNumShow / 100).toFixed(2)) // 岗位占比 * 人员占比
         peopleCount += parseFloat(val.num || 0)
       }
-      obj.peopleNum[item.index] = peopleNum
-      obj.total.peoples[item.index] = parseFloat(peopleCount.toFixed(2))
+      obj.peopleNum[item.job] = peopleNum
+      obj.total.peoples[item.job] = parseFloat(peopleCount.toFixed(2))
     }
   })
   /* 赋值 */
@@ -195,15 +199,23 @@ Tool.changeCheckbox = function (state) {
   const textObj = { '内部': {}, '外部': {} } // textObj = { '内部': { '业务岗': '' }, '外部': {} }
   for (const x in tableData) {
     tableData[x].forEach(function (item) {
-      if (arrResult[item.examine_result] === '不合格') {
+      if (arrResult[item.examine_result] === '不合格' && arrResult[tableData[x][0].examine_result] === '不合格') {
         item.accountability.in.forEach(function (item) {
           if (item) {
-            textObj['内部'][arrIn[item].text] = ''
+            if (arrIn[item]) {
+              textObj['内部'][arrIn[item].text] = ''
+            } else {
+              textObj['内部'][item] = ''
+            }
           }
         })
         item.accountability.out.forEach(function (item) {
           if (item) {
-            textObj['外部'][arrOut[item].text] = ''
+            if (arrIn[item]) {
+              textObj['外部'][arrOut[item].text] = ''
+            } else {
+              textObj['外部'][item] = ''
+            }
           }
         })
       }
@@ -228,7 +240,6 @@ Tool.changeCheckbox = function (state) {
             resultArr.push(obj)
           } else {
             const obj = { index: listIndex, count, type: '内部', typeNum, job: job, jobNum: 0, list: [] }
-            console.log(11111, peopleList, job)
             if (peopleList[job]) {
               for (const x in peopleList[job]) {
                 obj.list.push(peopleList[job][x])
@@ -290,6 +301,7 @@ Tool.returnFormData = function (list = [], { inside_ratio, outside_ratio }, peop
       const { employee_id: emp_id, examine_emp_id = '', employeename: name, num = 0 } = people
       peopleData.list[name] = { emp_id, examine_emp_id, name, num }
     })
+    // peopleObj[服装业务] = { index, job: '服装业务', jobNum: 0, list: { 徐海妹: { 人员信息 } }, type: '内部' }
     peopleObj[job] = peopleData
   })
   /* 提取数据（内部、外部） */
@@ -297,6 +309,7 @@ Tool.returnFormData = function (list = [], { inside_ratio, outside_ratio }, peop
     const typeObj = { 1: '内部', 2: '外部' }
     const { examineBusinessEmpList = [], ...otherData } = item
     const { post_name: job, ratio: jobNum, out_in } = otherData
+    // obj = { job: '面料业务', jobNum: 20, out_in: '内部', business_post_id, examine_goods_id, examine_post_id, is_delete, out_in, post_name, ratio }
     const obj = Object.assign({}, otherData, { index, job, jobNum, type: typeObj[out_in] })
     const objList = {}
     /* 添加人员：接口返回有数据的 */
@@ -305,7 +318,7 @@ Tool.returnFormData = function (list = [], { inside_ratio, outside_ratio }, peop
       objList[name] = { emp_id, examine_emp_id, name, num }
     })
     peopleObj[job] = Object.assign({}, peopleObj[job], obj)
-    peopleObj[job].list = Object.assign({}, peopleObj[job].list, objList)
+    peopleObj[job].list = Object.assign({}, peopleObj[job].list, objList) // 人员信息 中加入 比例 num
   })
   /* 分类 */
   for (const x in peopleObj) {
@@ -327,7 +340,6 @@ Tool.returnFormData = function (list = [], { inside_ratio, outside_ratio }, peop
   }
   /* 整合数组 */
   const formData = inArr.concat(outArr)
-  // console.log('formData ----- 返回：表单数据 ----- ', formData)
   return formData
 }
 
@@ -538,8 +550,8 @@ Tool.submitExamine_goods_detail = function (obj = {}, file, del_files = []) {
     })
     /* 仓库数据比例 !== 100% */
     if (obj_ratio !== 100) {
-      const { examine_result, store_name, examine_time } = objArr[0]
-      if (examine_result === '0') {
+      const { examine_result, store_name, examine_time, is_delete } = objArr[0]
+      if (examine_result === '0' && is_delete === '1') {
         error_detail.push(`${store_name} ${examine_time} 比例总和不等于100%`)
       }
     }
@@ -596,21 +608,25 @@ Tool.submitExamine_business_post = function (newList = [], oldList = [], arrIn =
  * [验证：责任划分]
  */
 Tool.provingAccountability = function ({ total: { job, peoples, type } }) {
-  let status = true
-  /* 类型占比 */
-  status = type !== 100 ? false : status
-  /* 岗位占比 */
-  for (const x in job) {
-    status = job[x] !== 100 ? false : status
-  }
-  /* 人员占比 */
-  for (const x in peoples) {
-    status = peoples[x] !== 100 ? false : status
-  }
-  if (!status) {
-    return '责任划分'
-  } else {
+  if (job['内部'] === 0 && job['外部'] === 0) {
     return ''
+  } else {
+    let status = true
+    /* 类型占比 */
+    status = type !== 100 ? false : status
+    /* 岗位占比 */
+    for (const x in job) {
+      status = job[x] !== 100 ? false : status
+    }
+    /* 人员占比 */
+    for (const x in peoples) {
+      status = peoples[x] !== 100 ? false : status
+    }
+    if (!status) {
+      return '责任划分模块各类型占比应为100%'
+    } else {
+      return ''
+    }
   }
 }
 

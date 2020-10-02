@@ -4,28 +4,27 @@
 <template>
   <div class="pageBox" v-on:scroll="pageScroll" ref="page">
 
-    <!-- 模块：变更 -->
-    <com-change v-if="pageType === 'modify'"></com-change>
-
-    <!-- 模块：表单 -->
-    <com-form></com-form>
-
-    <!-- 模块：表格 -->
-    <com-table></com-table>
+    <div class="pageTopBox">
+      <!-- 模块：变更 -->
+      <com-change v-if="pageType === 'modify'"></com-change>
+      <!-- 模块：表单 -->
+      <com-form></com-form>
+      <!-- 模块：表格 -->
+      <com-table></com-table>
+    </div>
 
     <!-- 底部按钮 -->
     <div class="bottomBox">
-      <el-button size="mini" type="warning" plain @click="submit(0)"
-        v-if="pageType === 'add' || pageType === 'update'"
-      >
-        暂存草稿
-      </el-button>
-      <el-button size="mini" type="primary" plain @click="submit(1)"
-        v-if="pageType !== 'view'"
-      >
-        {{pageType === 'modify' ? '确认变更' : '确认完成'}}
-      </el-button>
+      <!-- v-if="helpText"  -->
+      <el-button size="mini" plain @click="dialogVisible_help = true">帮助</el-button>
+      <el-button v-if="pageType === 'add' || pageType === 'update'" size="mini" type="warning" plain @click="submit(0)">暂存草稿</el-button>
+      <el-button v-if="pageType !== 'view'" size="mini" type="primary" plain @click="submit(1)">{{pageType === 'modify' ? '确认变更' : '确认完成'}}</el-button>
     </div>
+
+    <!-- 弹出层：帮助 -->
+    <el-dialog class="submitDialog" title="帮助" :visible.sync="dialogVisible_help" width="40%">
+      <p v-html="helpText"></p>
+    </el-dialog>
 
   </div>
 </template>
@@ -39,28 +38,35 @@ export default {
   components: { ComForm, ComTable, ComChange },
   data() {
     return {
-      scrollTop: 0
+      scrollTop: 0,
+      dialogVisible_help: false // 是否显示弹出层：帮助
     }
   },
   created() {
     const local = JSON.parse(localStorage.getItem('NOVA_examineGoods')) || {}
-    const { pageType = '', item_id = '40289281711abb1a01711b25c4810000' } = local
+    const { pageType = '', item_id = '2c9f10b674006259017405885a9f0291' } = local
     this.$store.commit('saveData', { name: 'pageType', obj: pageType })
     /** 请求：页面数据 **/
     this.$store.dispatch('A_showAddView', { item_id })
+    /** 请求：甘特表帮助按钮 **/
+    this.$store.dispatch('A_getHelpText')
 
-    // /* 平台方法 */
-    // // eslint-disable-next-line
-    // dg.removeBtn('cancel')
-    // // eslint-disable-next-line
-    // dg.removeBtn('saveAndAdd')
-    // // eslint-disable-next-line
-    // dg.removeBtn('saveAndClose')
-    // // eslint-disable-next-line
-    // dg.removeBtn('saveNoClose')
+    try {
+      /* 平台方法 */
+      // eslint-disable-next-line
+      dg.removeBtn('cancel')
+      // eslint-disable-next-line
+      dg.removeBtn('saveAndAdd')
+      // eslint-disable-next-line
+      dg.removeBtn('saveAndClose')
+      // eslint-disable-next-line
+      dg.removeBtn('saveNoClose')
+    } catch (err) {
+      //
+    }
   },
   computed: {
-    ...mapState(['pageType', 'modify_reason', 'modify_content'])
+    ...mapState(['pageType', 'modify_reason', 'modify_content', 'helpText'])
   },
   methods: {
     /**
@@ -106,18 +112,39 @@ export default {
 .pageBox {
   width: 100%;
   height: 100%;
+  font-size: 12px;
   background: #ffffff;
+  overflow-y: hidden;
+}
+
+.pageTopBox {
+  width: 100%;
+  height: calc(100% - 40px);
+  margin-bottom: 40px;
   overflow-y: auto;
 }
+
 .ComTable {
   margin-top: 20px;
   border-top: 1px solid #a6eaf1;
 }
+
+/*** 底部 ***/
 .bottomBox {
+  width: calc(100% - 30px);
+  padding: 6px 15px;
+  border-top: 1px solid #EBEEF5;
+  display: flex;
+  justify-content: flex-end;
+  position: fixed;
+  bottom: 0;
+  right: 0;
+}
+/* .bottomBox {
   padding: 2px 15px;
   display: flex;
   justify-content: flex-end;
-}
+} */
 </style>
 
 <style>
