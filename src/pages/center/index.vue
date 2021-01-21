@@ -43,8 +43,8 @@ export default {
     }
   },
   created() {
-    const local = JSON.parse(localStorage.getItem('NOVA_examineGoods')) || {}
-    const { pageType = '', item_id = '2c9f10b674006259017405885a9f0291' } = local
+    const local = JSON.parse(localStorage.getItem('NOVA_examineGoods') || '{}')
+    const { pageType = 'modify', item_id = '2c9f10b6759ba20901759cbc71f10028' } = local
     this.$store.commit('saveData', { name: 'pageType', obj: pageType })
     /** 请求：页面数据 **/
     this.$store.dispatch('A_showAddView', { item_id })
@@ -71,10 +71,20 @@ export default {
   methods: {
     /**
      * [提交表单]
-     * @param {[Int]} submitType 1 验证（确认完成）  0 不验证（暂存草稿
+     * @param {[Int]} submitType 1 验证（确认完成）  0 不验证（暂存草稿）
      */
     submit(submitType) {
-      this.$store.dispatch('A_addExamineGoods', { submitType })
+      if (submitType === 1) {
+        const that = this
+        this.$confirm('提交后，系统将自动完成该项目的库房验货结果节点', '注意', {
+          confirmButtonText: '继续',
+          cancelButtonText: '取消'
+        }).then(() => {
+          that.$store.dispatch('A_addExamineGoods', { submitType })
+        }).catch(() => {})
+      } else {
+        this.$store.dispatch('A_addExamineGoods', { submitType })
+      }
     },
     /**
      * [页面滚动事件]

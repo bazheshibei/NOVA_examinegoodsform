@@ -13,7 +13,7 @@ module.exports = {
     assetsPublicPath: '/',
     proxyTable: {
       '/api': {
-        target: 'http://10.10.0.226:8080/nova', // 晓东
+        // target: 'http://10.10.0.226:8080/nova', // 晓东
         target: 'http://10.10.0.54:8080/nova', // 老李
         secure: false, // proxy https
         changeOrigin: true,

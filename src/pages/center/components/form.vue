@@ -121,7 +121,7 @@
                     v-model="item.num"
                   ></el-input>
                   <p class="showNum" style="text-align: left; margin-right: 20px;" v-if="accountability.peopleNum[scope.row.job]">
-                    ({{accountability.peopleNum[scope.row.job][index]}}%)
+                    ({{accountability.peopleNum[scope.row.job][item.name]}}%)
                   </p>
                 </div>
               </div>

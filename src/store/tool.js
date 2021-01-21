@@ -277,11 +277,12 @@ Tool.changeCheckbox = function (state) {
  * [返回：报告信息]
  */
 Tool.returnExamineGoods = function (obj) {
-  const { fileList = [] } = obj
+  const { fileList = [], final_explain } = obj
   fileList.map(function (item) {
     item.name = item.file_name
     item.url = window.location.origin + '/nova' + item.file_path
   })
+  obj.final_explain = final_explain === null || final_explain === 'null' ? '' : final_explain
   obj.fileList = fileList
   return obj
 }
@@ -616,7 +617,7 @@ Tool.provingAccountability = function ({ total: { job, peoples, type } }) {
     status = type !== 100 ? false : status
     /* 岗位占比 */
     for (const x in job) {
-      status = job[x] !== 100 ? false : status
+      status = (job[x] !== 100 && job[x] !== 0) ? false : status
     }
     /* 人员占比 */
     for (const x in peoples) {

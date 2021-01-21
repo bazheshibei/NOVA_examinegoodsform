@@ -97,7 +97,7 @@
           </template>
           <template slot-scope="scope">
             <div class="comCell" v-if="pageType === 'view' && scope.row.examine_result === '0'">
-              {{arrResultType[scope.row.reason_type].label}}
+              {{arrResultType[scope.row.reason_type] ? arrResultType[scope.row.reason_type].label : ''}}
             </div>
             <div class="comCell" v-else-if="scope.row.examine_result === '0'">
               <el-select v-model="scope.row.reason_type" size="mini" @change="eventChange(scope.row, 'reason_type', $event)">
@@ -114,7 +114,7 @@
           </template>
           <template slot-scope="scope">
             <div class="comCell" v-if="pageType === 'view' && scope.row.examine_result === '0'">
-              <span v-for="(viewItem, viewIndex) in arrResultType[scope.row.reason_type].arr" :key="'view_' + viewIndex"
+              <span v-for="(viewItem, viewIndex) in (arrResultType[scope.row.reason_type] ? arrResultType[scope.row.reason_type].arr : [])" :key="'view_' + viewIndex"
                 v-show="viewItem.value === scope.row.reason_desc"
               >
                 {{viewItem.label}}
