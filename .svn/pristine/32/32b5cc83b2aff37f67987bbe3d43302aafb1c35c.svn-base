@@ -1,50 +1,46 @@
 
-import Api from '@/config/api'
 import Tool from './tool.js'
-import { Loading, MessageBox } from 'element-ui'
+import { MessageBox } from 'element-ui'
 
 /**
- * 生产环境代码
+ * 本地开发代码
+ * @ [调用本地数据]
+ * @ [不请求接口]
  */
-const Prod = {}
+const Dev = {}
 
 /**
  * [请求：页面数据]
  */
-Prod.A_showAddView = function (state, commit, item_id) {
-  const name = '页面数据'
-  const obj = { item_id }
-  const suc = function (res) {
-    // console.log('返回的数据 ----- ', res)
-    localStorage.setItem('验货报告', JSON.stringify(res))
-    const { examineGoods, customMap, examineGoodsDetailList, wbzrgs, businessPostList, examineNoQualifyList, yhclfs, examineBusinessPostList } = res
-    const { tableData, storehouse } = Tool.returnTableObj(examineGoodsDetailList)
-    const formData = Tool.returnFormData(examineBusinessPostList, examineGoods, businessPostList)
-    /* 数据 */
-    state.examineGoods = Tool.returnExamineGoods(examineGoods) //  报告信息
-    state.examineBusinessPostList = examineBusinessPostList //     岗位对应比例
-    state.customMap = customMap //                                 客户信息
-    state.formData = formData //                                   表单数据
-    state.tableData = tableData //                                 表格：原始数据
-    state.storehouse = storehouse //                               仓库
-    /* 选项 */
-    state.peopleList = Tool.peopleList(businessPostList) //        岗位下：人员列表
-    state.arrOut = Tool.returnArrOut(wbzrgs) //                    外部
-    state.arrIn = Tool.returnArrIn(businessPostList) //            内部
-    state.arrResultType = Tool.returnCate(examineNoQualifyList) // 原因类型
-    state.arrHandlingType = Tool.returnYhclfs(yhclfs) //           处理方式
-    /* change 事件：验货日期 */
-    commit('changeTime')
-    /** change 事件：责任归属 **/
-    commit('changeCheckbox')
-  }
-  Api({ name, obj, suc, loading: '加载数据中...' })
+Dev.A_showAddView = function (state, commit, item_id) {
+  const res = JSON.parse(localStorage.getItem('验货报告'))
+  const { examineGoods, customMap, examineGoodsDetailList, wbzrgs, businessPostList, examineNoQualifyList, yhclfs, examineBusinessPostList } = res
+  const { tableData, storehouse } = Tool.returnTableObj(examineGoodsDetailList)
+  const formData = Tool.returnFormData(examineBusinessPostList, examineGoods, businessPostList)
+  console.log('formData ----- ', formData)
+  /* 数据 */
+  state.examineGoods = Tool.returnExamineGoods(examineGoods) //  报告信息
+  state.examineBusinessPostList = examineBusinessPostList //     岗位对应比例
+  state.customMap = customMap //                                 客户信息
+  state.formData = formData //                                   表单数据
+  state.tableData = tableData //                                 表格：原始数据
+  state.storehouse = storehouse //                               仓库
+  /* 选项 */
+  state.peopleList = Tool.peopleList(businessPostList) //        岗位下：人员列表
+  state.arrOut = Tool.returnArrOut(wbzrgs) //                    外部
+  state.arrIn = Tool.returnArrIn(businessPostList) //            内部
+  state.arrResultType = Tool.returnCate(examineNoQualifyList) // 原因类型
+  state.arrHandlingType = Tool.returnYhclfs(yhclfs) //           处理方式
+  /* change 事件：验货日期 */
+  commit('changeTime')
+  /** change 事件：责任归属 **/
+  commit('changeCheckbox')
 }
 
 /**
  * [请求：保存]
  */
-Prod.A_addExamineGoods = function (state, getters, submitType) {
+Dev.A_addExamineGoods = function (state, getters, submitType) {
   /* 报告信息 */
   const { examine_goods_id, item_id, custom_id, final_examine_result, final_explain, examine_time, deliver_type } = state.examineGoods
   const obj = { examine_goods_id, item_id, custom_id, final_examine_result, state: submitType, final_explain, examine_time, deliver_type }
@@ -102,30 +98,15 @@ Prod.A_addExamineGoods = function (state, getters, submitType) {
     MessageBox.alert(warningArr.join(''), '请完善信息后再提交', { dangerouslyUseHTMLString: true })
   } else {
     /* 发起请求 */
-    const name = pageType === 'modify' ? '变更' : '保存'
-    const suc = function (res) {
-      const loading = Loading.service({ text: '提交成功', spinner: 'el-icon-circle-check' })
-      setTimeout(() => {
-        loading.close()
-        // eslint-disable-next-line
-        dg.close()
-      }, 1000)
-    }
-    Api({ name, obj, suc, loading: '提交中...' })
+    console.log(pageType === 'modify' ? '变更' : '保存', ' ----- obj', obj)
   }
 }
 
 /**
  * [请求：甘特表帮助按钮]
  */
-Prod.A_getHelpText = function (state) {
-  const name = '甘特表帮助按钮'
-  const obj = { help_page_url: 'LRYHBG' }
-  const method = 'get'
-  const suc = function (res) {
-    state.helpText = res.help_page_text
-  }
-  Api({ name, obj, method, suc })
+Dev.A_getHelpText = function (state) {
+  console.log('甘特表帮助按钮 ----- help_page_url', 'LRYHBG')
 }
 
-export default Prod
+export default Dev
